@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 import time
+import gen_su2
 
 # Returns the Z rotation matrix Z_theta.
 def Z(theta):
@@ -26,26 +27,28 @@ def cost_function(theta_vec, U, beta):
     F = product_of_rotations(theta_vec, beta)
     return np.linalg.norm(F - U)**2  # Frobenius norm
 
+# Problem values
+U = gen_su2.random_su2() # Target SU(2) matrix
+beta = 1.423534171157875 # beta value
+eps = 1e-15
+
+print(U)
+
 time_start = time.time()
 
-# Problem values
-U = np.array([[-0.85545599-0.46362917j, -0.22225151-0.06202673j],
- [ 0.22225151-0.06202673j, -0.85545599+0.46362917j]])  # Target SU(2) matrix
-beta = 1.423534171157875 # beta value
-
 initial_guess = [0, 0, 0, 0]  # Initial guess for the angles
-result0 = minimize(cost_function, initial_guess, args=(U, beta), tol=1e-15, options={'maxiter': 1000})
-result1 = minimize(cost_function, initial_guess, args=(-U, beta), tol=1e-15, options={'maxiter': 1000})
+result0 = minimize(cost_function, initial_guess, args=(U, beta), tol=eps, options={'maxiter': 1000})
+result1 = minimize(cost_function, initial_guess, args=(-U, beta), tol=eps, options={'maxiter': 1000})
 
-if cost_function(result0.x, U, beta) < 1e-13:
+if cost_function(result0.x, U, beta) < eps:
     theta1, theta2, theta3, theta4 = result0.x
-    print(f"Optimized angles: {theta1}, {theta2}, {theta3}, {theta4}")
-    print(f"Best cost: {cost_function(result0.x, U, beta)}")
-elif cost_function(result1.x, -U, beta) < 1e-13:
+    print(f"Thetas: {theta1}, {theta2}, {theta3}, {theta4}")
+    print(f"Cost: {cost_function(result0.x, U, beta)}")
+elif cost_function(result1.x, -U, beta) < eps:
     theta1, theta2, theta3, theta4 = result1.x
-    print(f"Optimized angles: {theta1}, {theta2}, {theta3}, {theta4}")
-    print(f"Best cost: {cost_function(result1.x, -U, beta)}")
+    print(f"Thetas: {theta1}, {theta2}, {theta3}, {theta4}")
+    print(f"Cost: {cost_function(result1.x, -U, beta)}")
 else:
-    print("Calculation failed.")
+    print("Optimization failed.")
 
 print(f"Time: {time.time() - time_start}")

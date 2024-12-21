@@ -32,32 +32,40 @@ time_start = time.time()
 # Problem values
 # U = np.array([[0, -1], [1, 0]])  # Target SU(2) matrix
 U = gen_su2.random_su2()
+eps = 1e-15
+
 print(U)
+
+time_start = time.time()
+
 l = 0
 r = np.pi / 2  # max beta value
 ans_beta = 0
 ans_theta = []
+ans_cost = 0
 
-while l + 1e-15 < r:
-    print(f"{l}, {r}")
+while l + eps < r:
+    # print(f"{l}, {r}")
     beta = (l + r) / 2
     initial_guess = [0, 0, 0, 0]  # Initial guess for the angles
-    result = minimize(cost_function, initial_guess, args=(U, beta), tol=1e-15, options={'maxiter': 1000})
+    result0 = minimize(cost_function, initial_guess, args=(U, beta), tol=eps, options={'maxiter': 1000})
+    result1 = minimize(cost_function, initial_guess, args=(-U, beta), tol=eps, options={'maxiter': 1000})
 
-    if cost_function(result.x, U, beta) < 1e-13:
+    if cost_function(result0.x, U, beta) < eps:
         ans_beta = beta
-        ans_theta = result.x
+        ans_theta = result0.x
+        ans_cost = cost_function(result0.x, U, beta)
+        r = beta
+    elif cost_function(result1.x, -U, beta) < eps:
+        ans_beta = beta
+        ans_theta = result1.x
+        ans_cost = cost_function(result1.x, -U, beta)
         r = beta
     else:
-        result = minimize(cost_function, initial_guess, args=(-U, beta), tol=1e-15, options={'maxiter': 1000})
-        if cost_function(result.x, -U, beta) < 1e-13:
-            ans_beta = beta
-            ans_theta = result.x
-            r = beta
-        else:
-            l = beta
-    
-    pre = result.x
+        l = beta
 
-print(ans_beta)
-print(ans_theta)
+theta1, theta2, theta3, theta4 = ans_theta
+print(f"Beta: {ans_beta}")
+print(f"Thetas: {theta1}, {theta2}, {theta3}, {theta4}")
+print(f"Cost: {ans_cost}")
+print(f"Time: {time.time() - time_start}")
