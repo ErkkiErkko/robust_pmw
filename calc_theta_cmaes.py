@@ -52,11 +52,11 @@ study.optimize(objective, n_trials=1000)
 
 # Get the best trial results
 best_trial = study.best_trial
-print(f"Optimized angles: theta1={best_trial.params['theta1']}, "
+print(f"Thetas: theta1={best_trial.params['theta1']}, "
       f"theta2={best_trial.params['theta2']}, "
       f"theta3={best_trial.params['theta3']}, "
       f"theta4={best_trial.params['theta4']}")
-print(f"Best cost: {best_trial.value}")
+print(f"Cost: {best_trial.value}")
 print(f"Time: {time.time() - time_start}")
 
 # TODO: Here I only considered U. The case of -U should be included.
